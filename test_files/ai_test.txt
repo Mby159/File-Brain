@@ -1,0 +1,5 @@
+File Brain 是一个本地文件系统智能搜索工具。
+它支持多种文件格式，包括 Word、Excel、PowerPoint、PDF、HTML 等。
+它还支持 Notion、Obsidian 等第三方服务。
+搜索时使用 TF-IDF 或 AI 嵌入模型。
+问答功能可以基于索引内容回答问题。

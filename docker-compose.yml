@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  file-brain:
+    build: .
+    ports:
+      - "8000:8000"  # API 服务
+      - "8501:8501"  # Streamlit Web 界面
+    volumes:
+      - ./data:/app/data  # 持久化数据
+      - ./test_files:/app/test_files  # 测试文件
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+    restart: unless-stopped
+    container_name: file-brain
+
+volumes:
+  data:
+  test_files:
