@@ -1,23 +1,230 @@
-# 贡献指南
+# Contributing Guide
+
+[中文版](#中文版)
+
+Thank you for your interest in and support of the File Brain project! We welcome and appreciate community contributions. This guide will help you understand how to participate in the project.
+
+## Table of Contents
+
+- [Code of Conduct](#code-of-conduct)
+- [Development Environment Setup](#development-environment-setup)
+- [Code Style Guide](#code-style-guide)
+- [Contribution Process](#contribution-process)
+- [Commit Message Format](#commit-message-format)
+- [Pull Request Process](#pull-request-process)
+- [Issue Reporting](#issue-reporting)
+- [Feature Requests](#feature-requests)
+- [Code Review](#code-review)
+- [Testing](#testing)
+- [Documentation Contributions](#documentation-contributions)
+- [Becoming a Maintainer](#becoming-a-maintainer)
+
+## Code of Conduct
+
+All contributors participating in this project should adhere to the following code of conduct:
+
+- Be respectful and use welcoming and inclusive language
+- Accept constructive criticism
+- Focus on what is best for the community
+- Show empathy towards other community members
+
+## Development Environment Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/file-brain.git
+cd file-brain
+```
+
+### 2. Create Virtual Environment
+
+```bash
+# Using venv
+python3 -m venv venv
+
+# Activate virtual environment
+# Windows
+venv\Scripts\activate
+# Linux/Mac
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Run Tests
+
+```bash
+python -m pytest
+```
+
+## Code Style Guide
+
+- Follow PEP 8 code style guidelines
+- Use 4 spaces for indentation
+- Maximum line length is 88 characters
+- Use type hints
+- Write clear docstrings
+- Add comments for complex logic
+
+## Contribution Process
+
+1. **Fork the Repository**: Fork the project repository on GitHub
+2. **Create Branch**: Create a new branch in your fork
+3. **Make Changes**: Implement features or fix bugs
+4. **Run Tests**: Ensure all tests pass
+5. **Commit Changes**: Use standardized commit message format
+6. **Create Pull Request**: Submit PR to the main repository
+7. **Code Review**: Respond to review comments and make necessary modifications
+8. **Merge**: PR is merged into the main branch
+
+## Commit Message Format
+
+Commit messages should follow this format:
+
+```
+<type>: <description>
+
+<detailed description>
+
+<optional footer>
+```
+
+### Types
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (not affecting functionality)
+- `refactor`: Code refactoring (not adding features or fixing bugs)
+- `perf`: Performance improvements
+- `test`: Adding or modifying tests
+- `chore`: Changes to build process or auxiliary tools
+
+### Example
+
+```
+feat: Add file monitoring feature
+
+- Implemented file monitoring based on watchdog
+- Support real-time indexing of new and modified files
+- Added monitoring configuration options
+
+Closes #123
+```
+
+## Pull Request Process
+
+1. **Title**: Use a clear and concise title describing the PR content
+2. **Description**:
+   - Detailed explanation of your changes
+   - Explain why these changes are needed
+   - Mention related issues
+   - Include test results
+3. **Checklist**:
+   - Ensure all tests pass
+   - Ensure code follows style guidelines
+   - Ensure documentation is updated
+
+## Issue Reporting
+
+If you find a bug, please report it following these steps:
+
+1. **Search Existing Issues**: Check if someone has already reported the same issue
+2. **Create New Issue**: Create a new issue using the provided template
+3. **Provide Detailed Information**:
+   - Description of the problem
+   - Steps to reproduce
+   - Expected behavior
+   - Actual behavior
+   - Environment information (OS, Python version, etc.)
+   - Error logs (if any)
+
+## Feature Requests
+
+If you have a feature request, please submit it following these steps:
+
+1. **Search Existing Requests**: Check if someone has already made the same request
+2. **Create New Request**: Create a new feature request using the provided template
+3. **Detailed Description**:
+   - Description of the feature
+   - Why this feature would be useful
+   - Possible implementation approach
+   - Any related reference materials
+
+## Code Review
+
+All PRs will undergo code review. The review process aims to ensure:
+
+- High code quality
+- Correct functionality
+- Adequate test coverage
+- Complete documentation
+
+Please be patient during the review and actively respond to review comments.
+
+## Testing
+
+We encourage adding tests for all changes. Tests should:
+
+- Cover new features and bug fixes
+- Be concise and clear
+- Run quickly
+
+Run tests:
+
+```bash
+python -m pytest
+```
+
+## Documentation Contributions
+
+Documentation contributions are equally important! You can:
+
+- Improve existing documentation
+- Add new tutorials or guides
+- Fix errors in documentation
+- Translate documentation
+
+## Becoming a Maintainer
+
+As the project grows, we may invite active contributors to become maintainers. Maintainer responsibilities include:
+
+- Reviewing PRs
+- Managing issues
+- Releasing new versions
+- Setting project roadmap
+
+If you are interested in becoming a maintainer, please contact the project lead.
+
+---
+
+Thank you again for your contribution to the File Brain project! Your participation will help us build a better file management tool.
+
+---
+
+# 中文版
 
 感谢您对 File Brain 项目的兴趣和支持！我们非常欢迎并感谢社区的贡献。本指南将帮助您了解如何参与到项目中来。
 
 ## 目录
 
-- [贡献指南](#贡献指南)
-  - [目录](#目录)
-  - [行为准则](#行为准则)
-  - [开发环境设置](#开发环境设置)
-  - [代码风格指南](#代码风格指南)
-  - [贡献流程](#贡献流程)
-  - [提交信息格式](#提交信息格式)
-  - [Pull Request 流程](#pull-request-流程)
-  - [问题报告](#问题报告)
-  - [功能请求](#功能请求)
-  - [代码审查](#代码审查)
-  - [测试](#测试)
-  - [文档贡献](#文档贡献)
-  - [成为维护者](#成为维护者)
+- [行为准则](#行为准则)
+- [开发环境设置](#开发环境设置)
+- [代码风格指南](#代码风格指南)
+- [贡献流程](#贡献流程)
+- [提交信息格式](#提交信息格式)
+- [Pull Request 流程](#pull-request-流程)
+- [问题报告](#问题报告)
+- [功能请求](#功能请求)
+- [代码审查](#代码审查)
+- [测试](#测试)
+- [文档贡献](#文档贡献)
+- [成为维护者](#成为维护者)
 
 ## 行为准则
 

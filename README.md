@@ -1,6 +1,358 @@
-# 🧠 File Brain - 本地文件系统智能管理工具
+# 🧠 File Brain - Intelligent Local File System Management Tool / 智能本地文件系统管理工具
+
+<div align="center">
+
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-blue)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-green)](https://fastapi.tiangolo.com/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-1.28%2B-red)](https://streamlit.io/)
+
+**English** | [中文](#中文文档)
+
+</div>
+
+## 📝 Introduction / 项目介绍
+
+**English:**
+File Brain is a powerful local file system management tool that can read, index, intelligently search and organize various types of file content, with support for knowledge graph construction and multi-language processing.
+
+**中文：**
+File Brain 是一个强大的本地文件系统管理工具，可以读取、索引、智能搜索和组织各种类型的文件内容，支持知识图谱构建和多语言处理。
+
+### 🎯 Key Features / 核心功能
+
+- 📄 **Multi-format Support** / 多格式支持 - Text, Office, PDF, HTML, Mind Maps
+- 🔍 **Intelligent Search** / 智能搜索 - Semantic, keyword, and hybrid search
+- 📁 **Smart Organization** / 智能组织 - Auto-tagging and intelligent naming
+- 🕸️ **Knowledge Graph** / 知识图谱 - File relationship analysis and visualization
+- 🔄 **File Monitoring** / 文件监控 - Real-time monitoring and auto-indexing
+- 🌐 **API & Web UI** / API 和 Web 界面 - RESTful API and interactive web interface
+- 🐳 **Docker Support** / Docker 支持 - Easy deployment with Docker
+
+## ✨ Features
+
+### 📄 Supported File Types
+
+| Type | Formats | Description |
+|------|---------|-------------|
+| **Text Files** | `.txt`, `.md`, `.rst` | Plain text, Markdown |
+| **Office Documents** | `.docx`, `.pptx`, `.xlsx` | Word, PowerPoint, Excel |
+| **PDF** | `.pdf` | PDF documents |
+| **Web Pages** | `.html`, `.htm` | HTML files |
+| **Mind Maps** | `.xmind`, `.mm`, `.opml` | XMind, FreeMind, OPML |
+
+### 🔍 Search Capabilities
+
+- **Semantic Search** - Intelligent search based on AI embedding vectors
+- **Keyword Search** - Traditional keyword matching
+- **Hybrid Search** - Combines the advantages of semantic and keyword search
+- **Type Filtering** - Search only specific types of files
+
+### 📁 Smart File Organization
+
+- **Multi-language Tag Extraction** - Intelligently extract tags from file content, supporting Chinese, English, Japanese, etc.
+- **Smart Filename Generation** - Generate meaningful filenames based on file content
+- **Automatic File Renaming** - Automatically rename files to improve searchability
+- **Directory File Organization** - Batch organize files in directories
+
+### 🕸️ Knowledge Graph
+
+- **File Association Analysis** - Automatically identify relationships between files
+- **Central File Identification** - Find core files in the knowledge graph
+- **Related File Recommendation** - Recommend related files based on similarity
+- **Visualization Support** - Provide knowledge graph data for frontend visualization
+
+### 🔄 File Monitoring
+
+- **Real-time Monitoring** - Monitor file system changes
+- **Automatic Indexing** - Automatically index new or modified files
+- **Multiple Monitoring Modes** - Support for watchdog and polling modes
+
+### 🌐 API Service
+
+- **RESTful API** - RESTful interface based on FastAPI
+- **Automatic Documentation** - Automatically generate API documentation
+- **File Upload** - Support file upload and indexing
+- **Batch Operations** - Support batch file processing
+
+### 🖥️ Web Interface
+
+- **Interactive Interface** - Visual interface based on Streamlit
+- **File Management** - Intuitive file management features
+- **Search Interface** - User-friendly search experience
+- **Knowledge Graph Visualization** - Interactive knowledge graph display
+
+### 🐳 Containerized Deployment
+
+- **Docker Support** - Provides Dockerfile and docker-compose configuration
+- **One-click Startup** - Simplified deployment and startup process
+- **Environment Isolation** - Containerized runtime to avoid dependency conflicts
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Configure Environment Variables (Optional)
+
+Create a `.env` file:
+
+```env
+# Notion API
+NOTION_API_KEY=your_notion_api_key
+NOTION_DATABASE_ID=your_database_id
+
+# Obsidian
+OBSIDIAN_VAULT_PATH=/path/to/your/vault
+
+# Google API (for NotebookLM)
+GOOGLE_API_KEY=your_google_api_key
+```
+
+### 3. Start Interactive Mode
+
+```bash
+python main.py
+```
+
+### 4. Start API Server and Web Interface
+
+```bash
+python main.py --server
+```
+
+- **Web Interface**: http://localhost:8501
+- **API Documentation**: http://localhost:8000/docs
+
+### 5. Docker Deployment
+
+```bash
+# Using startup script
+bash start.sh
+
+# Or use docker-compose directly
+docker-compose up -d --build
+```
+
+## 📖 User Guide
+
+### Interactive Mode Commands
+
+```
+file-brain> index <path>        # Index file or directory
+file-brain> search <query>      # Search content
+file-brain> stats               # Show statistics
+file-brain> sources             # List all sources
+file-brain> clear               # Clear all indexes
+file-brain> help                # Show help
+file-brain> quit                # Exit
+```
+
+### Command Line Usage
+
+```bash
+# Index file
+python main.py --index ./my-document.docx
+
+# Index directory
+python main.py --index ./my-documents/
+
+# Search
+python main.py --search "artificial intelligence"
+
+# Show statistics
+python main.py --stats
+
+# Start server
+python main.py --server
+```
+
+### API Usage Examples
+
+```python
+import requests
+
+# Upload and index file
+with open('document.pdf', 'rb') as f:
+    response = requests.post(
+        'http://localhost:8000/files/upload',
+        files={'file': f}
+    )
+
+# Search
+response = requests.post(
+    'http://localhost:8000/search',
+    json={'query': 'artificial intelligence', 'limit': 5}
+)
+results = response.json()
+
+# Extract file tags
+response = requests.post(
+    'http://localhost:8000/organize/extract-tags',
+    json={'content': 'Python is a high-level programming language'}
+)
+tags = response.json()['tags']
+
+# Generate filename
+response = requests.post(
+    'http://localhost:8000/organize/generate-filename',
+    json={'content': 'Python is a high-level programming language'}
+)
+filename = response.json()['filename']
+
+# Organize directory
+response = requests.post(
+    'http://localhost:8000/organize/directory',
+    json={'directory': './my-documents/'}
+)
+result = response.json()
+
+# Get knowledge graph
+response = requests.get('http://localhost:8000/knowledge-graph')
+graph = response.json()
+```
+
+## 🏗️ Project Structure
+
+```
+file-brain/
+├── ai/                      # AI related modules
+│   ├── ai_provider.py       # AI service provider
+│   └── qa_engine.py         # Q&A engine
+├── api/                     # API interface
+│   └── server.py            # FastAPI service
+├── core/                    # Core modules
+│   ├── embedding/           # Embedding models
+│   │   ├── base.py          # Base embedding class
+│   │   ├── sentence_transformers.py # Sentence Transformers model
+│   │   └── tfidf.py         # TF-IDF model
+│   ├── file_organizer/      # File organization
+│   │   ├── file_namer.py    # File namer
+│   │   └── tag_extractor.py # Tag extractor
+│   ├── knowledge_graph/     # Knowledge graph
+│   │   ├── graph_builder.py # Graph builder
+│   │   ├── graph_storage.py # Graph storage
+│   │   └── graph_visualizer.py # Graph visualizer
+│   ├── models/              # Data models
+│   │   └── file_content.py  # File content model
+│   ├── content_indexer.py   # Content indexer
+│   ├── file_reader.py       # File reader base class
+│   └── search_engine.py     # Search engine
+├── monitor/                 # File monitoring
+│   └── file_monitor.py      # File monitor
+├── readers/                 # File readers
+│   ├── external/            # External service readers
+│   │   ├── notion_reader.py # Notion reader
+│   │   └── obsidian_reader.py # Obsidian reader
+│   ├── office/              # Office document readers
+│   │   ├── excel_reader.py  # Excel reader
+│   │   ├── ppt_reader.py    # PowerPoint reader
+│   │   └── word_reader.py   # Word reader
+│   ├── others/              # Other file readers
+│   │   ├── html_reader.py   # HTML reader
+│   │   ├── mindmap_reader.py # Mind map reader
+│   │   └── pdf_reader.py    # PDF reader
+│   └── text/                # Text file readers
+│       ├── markdown_reader.py # Markdown reader
+│       └── text_reader.py   # Text reader
+├── web/                     # Web interface
+│   └── app.py               # Streamlit application
+├── file_brain.py            # Main controller
+├── main.py                  # Entry file
+├── config.py                # Configuration file
+├── requirements.txt         # Dependencies
+├── Dockerfile               # Docker configuration
+├── docker-compose.yml       # Docker Compose configuration
+└── start.sh                 # Startup script
+```
+
+## 🔧 Advanced Configuration
+
+### Vector Model
+
+By default uses `sentence-transformers/all-MiniLM-L6-v2`, can be modified in `config.py`:
+
+```python
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+CHUNK_SIZE = 500        # Chunk size
+CHUNK_OVERLAP = 50      # Chunk overlap
+```
+
+### File Monitoring Configuration
+
+```python
+# Monitoring mode: 'watchdog' or 'polling'
+MONITOR_MODE = 'watchdog'
+# Monitoring interval (only for polling mode)
+MONITOR_INTERVAL = 5  # seconds
+```
+
+### Adding Support for New File Types
+
+1. Create a new reader class in the `readers/` directory
+2. Inherit from `BaseFileReader`
+3. Implement the `read()` method
+4. Add extension mapping in `config.py`'s `SUPPORTED_EXTENSIONS`
+5. Register the reader in `readers/__init__.py`'s `READER_MAP`
+
+## 📋 Dependencies
+
+Main dependencies:
+- **FastAPI** - Web API framework
+- **uvicorn** - ASGI server
+- **python-multipart** - Form data processing
+- **scikit-learn** - Machine learning library (for TF-IDF)
+- **sentence-transformers** - Text embedding model
+- **NetworkX** - Knowledge graph construction
+- **python-docx** - Word document reading
+- **python-pptx** - PowerPoint reading
+- **openpyxl** - Excel reading
+- **PyPDF2/pdfplumber** - PDF reading
+- **beautifulsoup4** - HTML parsing
+- **watchdog** - File monitoring
+- **xmindparser** - Mind map parsing
+- **notion-client** - Notion API
+- **requests** - HTTP requests
+- **streamlit** - Web interface
+- **numpy** - Numerical computing
+
+## 🤝 Contributing
+
+Issues and Pull Requests are welcome!
+
+### Contribution Guidelines
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+MIT License
+
+---
+
+<a name="中文文档"></a>
+# 中文文档
+
+## 📝 项目介绍
 
 File Brain 是一个强大的本地文件系统管理工具，可以读取、索引、智能搜索和组织各种类型的文件内容，支持知识图谱构建和多语言处理。
+
+### 🎯 核心功能
+
+- 📄 **多格式支持** - 文本、Office、PDF、HTML、思维导图
+- 🔍 **智能搜索** - 语义搜索、关键词搜索、混合搜索
+- 📁 **智能组织** - 自动标签提取和智能文件名生成
+- 🕸️ **知识图谱** - 文件关联分析和可视化
+- 🔄 **文件监控** - 实时监控和自动索引
+- 🌐 **API 和 Web 界面** - RESTful API 和交互式 Web 界面
+- 🐳 **Docker 支持** - 使用 Docker 轻松部署
 
 ## ✨ 功能特性
 
