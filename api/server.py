@@ -85,6 +85,16 @@ class TagExtractRequest(BaseModel):
     top_n: int = 10
 
 
+class SmartMonitorConfigRequest(BaseModel):
+    mode: Optional[str] = None
+    monitor_searched_files: Optional[bool] = None
+    monitor_custom_dirs: Optional[List[str]] = None
+    active_file_interval: Optional[int] = None
+    inactive_file_interval: Optional[int] = None
+    whitelist: Optional[List[str]] = None
+    blacklist: Optional[List[str]] = None
+
+
 # ==================== API 路由 ====================
 
 @app.get("/")
@@ -391,6 +401,51 @@ async def organize_directory(request: FileOrganizeRequest):
     try:
         stats = file_brain.organize_files(request.path, recursive=request.recursive)
         return {"success": True, "stats": stats}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== 智能监控功能 ====================
+
+@app.get("/smart-monitor/status")
+async def get_smart_monitor_status():
+    """获取智能监控状态"""
+    try:
+        return file_brain.get_smart_monitor_status()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/smart-monitor/search-history")
+async def get_search_history(limit: int = 10):
+    """获取搜索历史"""
+    try:
+        history = file_brain.get_search_history(limit)
+        return {"history": history}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/smart-monitor/monitored-files")
+async def get_monitored_files():
+    """获取监控文件"""
+    try:
+        files = file_brain.get_monitored_files()
+        return {"files": files}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/smart-monitor/config")
+async def update_smart_monitor_config(request: SmartMonitorConfigRequest):
+    """更新智能监控配置"""
+    try:
+        config_dict = request.model_dump(exclude_unset=True)
+        success = file_brain.update_smart_monitor_config(config_dict)
+        if success:
+            return {"success": True, "message": "配置更新成功"}
+        else:
+            raise HTTPException(status_code=400, detail="配置更新失败")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

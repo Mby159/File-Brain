@@ -32,7 +32,7 @@ st.sidebar.title("🧠 File Brain")
 
 page = st.sidebar.selectbox(
     "选择功能",
-    ["首页", "文件索引", "智能搜索", "文件组织", "知识图谱", "系统统计", "用户反馈"]
+    ["首页", "文件索引", "智能搜索", "文件组织", "知识图谱", "智能监控", "系统统计", "用户反馈"]
 )
 
 # 首页
@@ -307,6 +307,91 @@ elif page == "知识图谱":
                 st.plotly_chart(fig, use_container_width=True)
             else:
                 st.info("知识图谱为空")
+
+# 智能监控页面
+elif page == "智能监控":
+    st.title("🔍 智能监控")
+    
+    # 监控状态
+    st.markdown("### 监控状态")
+    try:
+        status = file_brain.get_smart_monitor_status()
+        st.markdown(f"- 运行状态: {'运行中' if status['is_running'] else '已停止'}")
+        st.markdown(f"- 监控路径数: {len(status['watched_paths'])}")
+        st.markdown(f"- 活跃文件数: {status['active_files']}")
+        
+        # 搜索历史摘要
+        summary = status['search_history_summary']
+        st.markdown(f"- 总搜索文件数: {summary['total_files']}")
+        st.markdown(f"- 活跃文件数: {summary['active_files']}")
+    except Exception as e:
+        st.error(f"获取监控状态失败: {e}")
+    
+    # 监控控制
+    st.markdown("### 监控控制")
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if st.button("启动监控"):
+            file_brain.start_watching()
+            st.success("监控已启动")
+    
+    with col2:
+        if st.button("停止监控"):
+            file_brain.stop_watching()
+            st.success("监控已停止")
+    
+    # 搜索历史
+    st.markdown("### 搜索历史")
+    try:
+        history = file_brain.get_search_history(limit=20)
+        if history:
+            df_history = pd.DataFrame(history)
+            # 转换时间戳为可读格式
+            import datetime
+            df_history['first_searched'] = df_history['first_searched'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S'))
+            df_history['last_searched'] = df_history['last_searched'].apply(lambda x: datetime.datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S'))
+            st.dataframe(df_history)
+        else:
+            st.info("暂无搜索历史")
+    except Exception as e:
+        st.error(f"获取搜索历史失败: {e}")
+    
+    # 监控文件
+    st.markdown("### 监控文件")
+    try:
+        monitored_files = file_brain.get_monitored_files()
+        if monitored_files:
+            df_monitored = pd.DataFrame(monitored_files, columns=["文件路径"])
+            st.dataframe(df_monitored)
+        else:
+            st.info("暂无监控文件")
+    except Exception as e:
+        st.error(f"获取监控文件失败: {e}")
+    
+    # 监控路径管理
+    st.markdown("### 监控路径管理")
+    watch_path = st.text_input("添加监控路径")
+    if st.button("添加路径"):
+        if watch_path:
+            success = file_brain.watch_path(watch_path)
+            if success:
+                st.success(f"路径 {watch_path} 已添加到监控")
+            else:
+                st.error("添加路径失败")
+        else:
+            st.error("请输入路径")
+    
+    unwatch_path = st.text_input("移除监控路径")
+    if st.button("移除路径"):
+        if unwatch_path:
+            success = file_brain.unwatch_path(unwatch_path)
+            if success:
+                st.success(f"路径 {unwatch_path} 已从监控中移除")
+            else:
+                st.error("移除路径失败")
+        else:
+            st.error("请输入路径")
 
 # 系统统计页面
 elif page == "系统统计":

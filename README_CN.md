@@ -227,9 +227,11 @@ file-brain/
 ├── api/                     # API 接口
 │   └── server.py            # FastAPI 服务
 ├── core/                    # 核心模块
+│   ├── config/              # 配置
 │   ├── embedding/           # 嵌入模型
 │   ├── file_organizer/      # 文件组织
 │   ├── knowledge_graph/     # 知识图谱
+│   ├── smart_monitor/       # 智能文件监控
 │   ├── content_indexer.py   # 内容索引器
 │   ├── file_reader.py       # 文件读取基类
 │   └── search_engine.py     # 搜索引擎

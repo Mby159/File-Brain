@@ -11,6 +11,8 @@ from core.search_engine import SearchEngine, SearchResult
 from core.file_reader import FileContent
 from core.knowledge_graph import KnowledgeGraphBuilder, GraphStorage, GraphVisualizer
 from core.file_organizer import FileNamer, TagExtractor
+from core.smart_monitor.smart_monitor_manager import SmartMonitorManager
+from core.config.smart_monitor_config import SmartMonitorConfig
 from core.logger import log_info, log_error, log_debug, log_warning
 from readers import get_reader_for_file
 from readers.external import NotionReader, ObsidianReader
@@ -32,11 +34,13 @@ class FileBrain:
         self.obsidian_reader = None
         self.qa_engine = None
         self.file_monitor = None
+        self.smart_monitor = None
         self.knowledge_graph = None
         self.graph_storage = GraphStorage()
         self.file_namer = FileNamer()
         self.tag_extractor = TagExtractor()
         self._init_knowledge_graph()
+        self._last_add_status = "none"  # success | skipped | failed | none
     
     def _get_qa_engine(self):
         """获取问答引擎（延迟初始化）"""
@@ -50,6 +54,14 @@ class FileBrain:
             self.file_monitor = FileMonitor()
             self.file_monitor.add_handler(self._handle_monitor_event)
         return self.file_monitor
+    
+    def _get_smart_monitor(self):
+        """获取智能监控管理器（延迟初始化）"""
+        if self.smart_monitor is None:
+            config = SmartMonitorConfig()
+            self.smart_monitor = SmartMonitorManager(config)
+            self.smart_monitor.add_handler(self._handle_monitor_event)
+        return self.smart_monitor
     
     def _init_knowledge_graph(self):
         """初始化知识图谱"""
@@ -100,18 +112,31 @@ class FileBrain:
         try:
             # 读取文件
             content = reader.read(file_path)
+
+            # 增量：内容未变化则跳过（仍返回 True，但在目录统计里计为 skipped）
+            try:
+                if self.indexer.is_duplicate(content.source, getattr(content, "file_hash", "") or ""):
+                    self._last_add_status = "skipped"
+                    log_debug(f"跳过(未变化): {content.source}")
+                    return True
+            except Exception:
+                # 不让增量检查阻断索引
+                pass
             
             # 索引内容
             if self.indexer.index_content(content):
+                self._last_add_status = "success"
                 # 更新知识图谱
                 if self.knowledge_graph:
                     self.knowledge_graph.add_file(content)
                     # 保存知识图谱
                     self.graph_storage.save(self.knowledge_graph.get_graph())
                 return True
+            self._last_add_status = "failed"
             return False
         
         except Exception as e:
+            self._last_add_status = "failed"
             log_error(f"处理文件失败 {file_path}", error=e)
             return False
     
@@ -160,7 +185,10 @@ class FileBrain:
             
             # 添加文件
             if self.add_file(file_path):
-                stats["success"] += 1
+                if getattr(self, "_last_add_status", "") == "skipped":
+                    stats["skipped"] += 1
+                else:
+                    stats["success"] += 1
             else:
                 stats["failed"] += 1
         
@@ -292,23 +320,43 @@ class FileBrain:
         Returns:
             搜索结果列表
         """
-        return self.search_engine.search(query, top_k=top_k)
+        results = self.search_engine.search(query, top_k=top_k)
+        # 记录搜索历史到智能监控
+        smart_monitor = self._get_smart_monitor()
+        smart_monitor.record_search(query, [result.source for result in results])
+        return results
     
     def semantic_search(self, query: str, top_k: int = 10) -> List[SearchResult]:
         """语义搜索"""
-        return self.search_engine.semantic_search(query, top_k=top_k)
+        results = self.search_engine.semantic_search(query, top_k=top_k)
+        # 记录搜索历史到智能监控
+        smart_monitor = self._get_smart_monitor()
+        smart_monitor.record_search(query, [result.source for result in results])
+        return results
     
     def keyword_search(self, query: str, top_k: int = 10) -> List[SearchResult]:
         """关键词搜索"""
-        return self.search_engine.keyword_search(query, top_k=top_k)
+        results = self.search_engine.keyword_search(query, top_k=top_k)
+        # 记录搜索历史到智能监控
+        smart_monitor = self._get_smart_monitor()
+        smart_monitor.record_search(query, [result.source for result in results])
+        return results
     
     def hybrid_search(self, query: str, top_k: int = 10) -> List[SearchResult]:
         """混合搜索"""
-        return self.search_engine.hybrid_search(query, top_k=top_k)
+        results = self.search_engine.hybrid_search(query, top_k=top_k)
+        # 记录搜索历史到智能监控
+        smart_monitor = self._get_smart_monitor()
+        smart_monitor.record_search(query, [result.source for result in results])
+        return results
     
     def search_by_type(self, query: str, file_type: str, top_k: int = 10) -> List[SearchResult]:
         """按文件类型搜索"""
-        return self.search_engine.search(query, top_k=top_k, file_types=[file_type])
+        results = self.search_engine.search(query, top_k=top_k, file_types=[file_type])
+        # 记录搜索历史到智能监控
+        smart_monitor = self._get_smart_monitor()
+        smart_monitor.record_search(query, [result.source for result in results])
+        return results
     
     # ==================== 管理功能 ====================
     
@@ -379,8 +427,12 @@ class FileBrain:
         Returns:
             是否成功
         """
-        monitor = self._get_file_monitor()
-        return monitor.add_path(path)
+        # 同时添加到智能监控和普通监控
+        smart_monitor = self._get_smart_monitor()
+        file_monitor = self._get_file_monitor()
+        smart_result = smart_monitor.add_path(path)
+        file_result = file_monitor.add_path(path)
+        return smart_result and file_result
     
     def unwatch_path(self, path: Union[str, Path]) -> bool:
         """
@@ -392,30 +444,94 @@ class FileBrain:
         Returns:
             是否成功
         """
-        monitor = self._get_file_monitor()
-        return monitor.remove_path(path)
+        # 同时从智能监控和普通监控中移除
+        smart_monitor = self._get_smart_monitor()
+        file_monitor = self._get_file_monitor()
+        smart_result = smart_monitor.remove_path(path)
+        file_result = file_monitor.remove_path(path)
+        return smart_result and file_result
     
     def start_watching(self):
         """启动文件监控"""
-        monitor = self._get_file_monitor()
-        if not monitor.is_running:
-            monitor.start()
+        # 启动智能监控
+        smart_monitor = self._get_smart_monitor()
+        if not smart_monitor.is_running:
+            smart_monitor.start()
+        # 启动普通监控作为备份
+        file_monitor = self._get_file_monitor()
+        if not file_monitor.is_running:
+            file_monitor.start()
     
     def stop_watching(self):
         """停止文件监控"""
-        monitor = self._get_file_monitor()
-        if monitor.is_running:
-            monitor.stop()
+        # 停止智能监控
+        smart_monitor = self._get_smart_monitor()
+        if smart_monitor.is_running:
+            smart_monitor.stop()
+        # 停止普通监控
+        file_monitor = self._get_file_monitor()
+        if file_monitor.is_running:
+            file_monitor.stop()
     
     def get_watched_paths(self) -> List[Path]:
         """获取正在监控的路径列表"""
-        monitor = self._get_file_monitor()
-        return monitor.get_watched_paths()
+        # 返回智能监控的路径
+        smart_monitor = self._get_smart_monitor()
+        return smart_monitor.get_watched_paths()
     
     def is_watching(self) -> bool:
         """检查是否正在监控"""
-        monitor = self._get_file_monitor()
-        return monitor.is_running
+        # 检查智能监控是否运行
+        smart_monitor = self._get_smart_monitor()
+        return smart_monitor.is_running
+    
+    # ==================== 智能监控功能 ====================
+    
+    def get_smart_monitor_status(self) -> Dict[str, Any]:
+        """
+        获取智能监控状态
+        
+        Returns:
+            智能监控状态字典
+        """
+        smart_monitor = self._get_smart_monitor()
+        return smart_monitor.get_status()
+    
+    def get_search_history(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        获取搜索历史
+        
+        Args:
+            limit: 返回的历史记录数量
+        
+        Returns:
+            搜索历史列表
+        """
+        smart_monitor = self._get_smart_monitor()
+        return smart_monitor.get_search_history(limit)
+    
+    def get_monitored_files(self) -> List[str]:
+        """
+        获取正在监控的文件列表
+        
+        Returns:
+            监控文件列表
+        """
+        smart_monitor = self._get_smart_monitor()
+        return smart_monitor.get_monitored_files()
+    
+    def update_smart_monitor_config(self, config: Dict[str, Any]) -> bool:
+        """
+        更新智能监控配置
+        
+        Args:
+            config: 配置字典
+        
+        Returns:
+            是否成功
+        """
+        smart_monitor = self._get_smart_monitor()
+        return smart_monitor.update_config(config)
     
     # ==================== 知识图谱功能 ====================
     

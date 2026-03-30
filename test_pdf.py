@@ -6,7 +6,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from readers.pdf_reader import PDFReader
+from readers.others.pdf_reader import PdfReader
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 

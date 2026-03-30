@@ -83,10 +83,34 @@ class ContentIndexer:
         else:
             print("使用 TF-IDF 模式 (完全离线)")
             self.embedding_model = TfidfEmbedding()
-            self.dimension = self.embedding_model.get_dimension()
+            # TF-IDF 向量器未持久化：若有历史 documents，需重建向量器与 embeddings，确保查询维度一致
+            if self.documents:
+                try:
+                    self.embeddings = self.embedding_model.encode_with_fit(self.documents).astype('float32')
+                    self.dimension = int(self.embeddings.shape[1])
+                    self._save_index()
+                except Exception as e:
+                    print(f"重建 TF-IDF 索引失败: {e}")
+                    self.dimension = self.embedding_model.get_dimension()
+            else:
+                self.dimension = self.embedding_model.get_dimension()
             self.use_tfidf = True
         
         self._initialized = True
+
+    def is_duplicate(self, source: str, file_hash: str) -> bool:
+        """
+        判断 (source, file_hash) 是否已在索引中存在。
+        用于增量索引：文件内容未变化则跳过重新写入。
+        """
+        if not self._initialized:
+            self.initialize()
+        if not source or not file_hash:
+            return False
+        for md in self.metadatas:
+            if md.get("source") == source and md.get("file_hash") == file_hash:
+                return True
+        return False
     
     def _get_embedding(self, texts: List[str]) -> np.ndarray:
         """获取文本的嵌入向量"""
@@ -108,6 +132,11 @@ class ContentIndexer:
             self.initialize()
         
         try:
+            # 增量：若同一文件 hash 已存在，则跳过
+            if self.is_duplicate(content.source, getattr(content, "file_hash", "") or ""):
+                print(f"跳过(未变化): {content.source}")
+                return True
+
             # 如果内容已分块，使用分块；否则对整个内容编码
             texts_to_index = content.chunks if content.chunks else [content.content]
             
@@ -124,6 +153,7 @@ class ContentIndexer:
                     "source": content.source,
                     "file_type": content.file_type,
                     "title": content.title or "",
+                    "file_hash": getattr(content, "file_hash", None),
                     "chunk_index": i,
                     "total_chunks": len(texts_to_index),
                     "indexed_at": datetime.now().isoformat(),
@@ -138,9 +168,8 @@ class ContentIndexer:
             
             # 生成嵌入向量
             if self.use_tfidf and len(self.documents) > 0:
-                # 对于 TF-IDF，需要重新训练整个向量器
-                all_texts = self.documents + texts_to_index
-                self.embeddings = self.embedding_model.encode_with_fit(all_texts)
+                # 对于 TF-IDF，需要重新训练整个向量器（documents 已含本批 chunks，勿再拼 texts_to_index，否则行数错位）
+                self.embeddings = self.embedding_model.encode_with_fit(self.documents)
             else:
                 # 对于 AI 嵌入模型，直接添加新向量
                 new_embeddings = self._get_embedding(texts_to_index)
