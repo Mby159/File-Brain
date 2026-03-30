@@ -139,6 +139,43 @@ bash start.sh
 docker-compose up -d --build
 ```
 
+### 6. 最小可运行链路
+
+**索引 → 搜索 → 问答**
+
+1. **索引文件**：将文档添加到系统
+   ```bash
+   # 索引目录
+   python main.py --index ./documents/
+   
+   # 索引单个文件
+   python main.py --index ./report.pdf
+   ```
+
+2. **搜索内容**：查找相关信息
+   ```bash
+   # 搜索特定主题
+   python main.py --search "人工智能"
+   ```
+
+3. **提问**：基于文档获取 AI 回答
+   - 使用 Web 界面：http://localhost:8501
+   - 或使用 API 端点 `/ai/ask`
+
+### 7. 性能基准测试
+
+运行快速性能测试来测量索引速度：
+
+```bash
+# 测试索引 1000 个文件
+python -m benchmarks.performance_test
+
+# 示例输出：
+# Indexing 1000 files took 12.34 seconds
+# Average time per file: 0.012 seconds
+# Memory usage: 156.78 MB
+```
+
 ## 📖 使用指南
 
 ### 交互模式命令

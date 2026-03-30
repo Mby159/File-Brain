@@ -3,18 +3,21 @@
 """
 import sys
 from pathlib import Path
-import json
-import requests
 
+# 添加项目路径
 sys.path.insert(0, str(Path(__file__).parent))
 
-BASE_URL = "http://localhost:8000"
+from fastapi.testclient import TestClient
+from api.server import app
+
+# 创建测试客户端
+client = TestClient(app)
 
 
 def test_api_root():
     """测试根路径"""
     print("\n=== 测试根路径 ===")
-    response = requests.get(f"{BASE_URL}/")
+    response = client.get("/")
     assert response.status_code == 200
     data = response.json()
     print(f"响应: {data}")
@@ -27,7 +30,7 @@ def test_api_root():
 def test_api_stats():
     """测试统计信息"""
     print("\n=== 测试统计信息 ===")
-    response = requests.get(f"{BASE_URL}/stats")
+    response = client.get("/stats")
     assert response.status_code == 200
     data = response.json()
     print(f"响应: {data}")
@@ -38,7 +41,7 @@ def test_api_stats():
 def test_api_sources():
     """测试来源列表"""
     print("\n=== 测试来源列表 ===")
-    response = requests.get(f"{BASE_URL}/sources")
+    response = client.get("/sources")
     assert response.status_code == 200
     data = response.json()
     print(f"响应: {data}")
@@ -57,7 +60,7 @@ def test_api_file_organize():
     # 提取标签
     print("\n测试提取标签:")
     payload = {"path": test_file_path, "top_n": 5}
-    response = requests.post(f"{BASE_URL}/organize/extract-tags", json=payload)
+    response = client.post("/organize/extract-tags", json=payload)
     assert response.status_code == 200
     data = response.json()
     print(f"响应: {data}")
@@ -68,7 +71,7 @@ def test_api_file_organize():
     # 测试生成文件名
     print("\n测试生成文件名:")
     payload = {"path": test_file_path}
-    response = requests.post(f"{BASE_URL}/organize/generate-filename", json=payload)
+    response = client.post("/organize/generate-filename", json=payload)
     assert response.status_code == 200
     data = response.json()
     print(f"响应: {data}")
@@ -81,7 +84,7 @@ def test_api_search():
     """测试搜索功能"""
     print("\n=== 测试搜索功能 ===")
     payload = {"query": "测试", "top_k": 5, "search_type": "semantic"}
-    response = requests.post(f"{BASE_URL}/search", json=payload)
+    response = client.post("/search", json=payload)
     assert response.status_code == 200
     data = response.json()
     print(f"响应: {data}")
@@ -89,44 +92,3 @@ def test_api_search():
     assert "total" in data
     assert "query" in data
     print("[OK] 搜索功能测试通过")
-
-
-def main():
-    """主测试函数"""
-    print("==================================================")
-    print("测试API功能")
-    print("==================================================")
-    
-    try:
-        # 启动API服务器（在后台运行）
-        import subprocess
-        import time
-        
-        server_process = subprocess.Popen([
-            sys.executable, "-c", 
-            "from api.server import start_server; start_server()"
-        ])
-        
-        # 等待服务器启动
-        time.sleep(3)
-        
-        # 运行测试
-        test_api_root()
-        test_api_stats()
-        test_api_sources()
-        test_api_file_organize()
-        test_api_search()
-        
-        print("\n==================================================")
-        print("[OK] 所有API测试通过!")
-        print("==================================================")
-        
-    finally:
-        # 停止服务器
-        if 'server_process' in locals():
-            server_process.terminate()
-            server_process.wait()
-
-
-if __name__ == "__main__":
-    main()

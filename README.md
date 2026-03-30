@@ -139,6 +139,43 @@ bash start.sh
 docker-compose up -d --build
 ```
 
+### 6. Minimum Viable Workflow
+
+**Index → Search → Q&A**
+
+1. **Index files**: Add your documents to the system
+   ```bash
+   # Index a directory
+   python main.py --index ./documents/
+   
+   # Index a single file
+   python main.py --index ./report.pdf
+   ```
+
+2. **Search content**: Find relevant information
+   ```bash
+   # Search for specific topics
+   python main.py --search "artificial intelligence"
+   ```
+
+3. **Ask questions**: Get AI-powered answers based on your documents
+   - Use the Web Interface at http://localhost:8501
+   - Or use the API endpoint `/ai/ask`
+
+### 7. Performance Benchmark
+
+Run a quick performance test to measure indexing speed:
+
+```bash
+# Test indexing 1000 files
+python -m benchmarks.performance_test
+
+# Sample output:
+# Indexing 1000 files took 12.34 seconds
+# Average time per file: 0.012 seconds
+# Memory usage: 156.78 MB
+```
+
 ## 📖 User Guide
 
 ### Interactive Mode Commands

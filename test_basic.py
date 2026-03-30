@@ -18,51 +18,48 @@ def test_imports():
     print("测试模块导入...")
     print("=" * 50)
     
-    try:
-        from config import SUPPORTED_EXTENSIONS
-        print(f"{CHECK} config 模块导入成功")
-        print(f"  支持的文件类型: {list(SUPPORTED_EXTENSIONS.keys())}")
-    except Exception as e:
-        print(f"{CROSS} config 模块导入失败: {e}")
-        return False
+    # 测试config模块
+    from config import SUPPORTED_EXTENSIONS
+    print(f"{CHECK} config 模块导入成功")
+    print(f"  支持的文件类型: {list(SUPPORTED_EXTENSIONS.keys())}")
+    assert SUPPORTED_EXTENSIONS is not None
     
-    try:
-        from core.file_reader import BaseFileReader, FileContent
-        print(f"{CHECK} core.file_reader 模块导入成功")
-    except Exception as e:
-        print(f"{CROSS} core.file_reader 模块导入失败: {e}")
-        return False
+    # 测试core.file_reader模块
+    from core.file_reader import BaseFileReader, FileContent
+    print(f"{CHECK} core.file_reader 模块导入成功")
+    assert BaseFileReader is not None
+    assert FileContent is not None
     
-    try:
-        from core.content_indexer import ContentIndexer
-        print(f"{CHECK} core.content_indexer 模块导入成功")
-    except Exception as e:
-        print(f"{CROSS} core.content_indexer 模块导入失败: {e}")
-        return False
+    # 测试core.content_indexer模块
+    from core.content_indexer import ContentIndexer
+    print(f"{CHECK} core.content_indexer 模块导入成功")
+    assert ContentIndexer is not None
     
-    try:
-        from core.search_engine import SearchEngine
-        print(f"{CHECK} core.search_engine 模块导入成功")
-    except Exception as e:
-        print(f"{CROSS} core.search_engine 模块导入失败: {e}")
-        return False
+    # 测试core.search_engine模块
+    from core.search_engine import SearchEngine
+    print(f"{CHECK} core.search_engine 模块导入成功")
+    assert SearchEngine is not None
     
-    try:
-        from readers import get_reader_for_file
-        print(f"{CHECK} readers 模块导入成功")
-    except Exception as e:
-        print(f"{CROSS} readers 模块导入失败: {e}")
-        return False
+    # 测试readers模块
+    from readers import get_reader_for_file
+    print(f"{CHECK} readers 模块导入成功")
+    assert get_reader_for_file is not None
     
-    try:
-        from file_brain import FileBrain
-        print(f"{CHECK} file_brain 模块导入成功")
-    except Exception as e:
-        print(f"{CROSS} file_brain 模块导入失败: {e}")
-        return False
+    # 测试file_brain模块
+    from file_brain import FileBrain
+    print(f"{CHECK} file_brain 模块导入成功")
+    assert FileBrain is not None
+    
+    # 测试智能监控模块
+    from core.smart_monitor.smart_monitor_manager import SmartMonitorManager
+    print(f"{CHECK} core.smart_monitor.smart_monitor_manager 模块导入成功")
+    assert SmartMonitorManager is not None
+    
+    from core.config.smart_monitor_config import SmartMonitorConfig
+    print(f"{CHECK} core.config.smart_monitor_config 模块导入成功")
+    assert SmartMonitorConfig is not None
     
     print("\n所有模块导入成功!")
-    return True
 
 
 def test_text_reader():
@@ -88,6 +85,10 @@ def test_text_reader():
     print(f"  标题: {content.title}")
     print(f"  内容长度: {len(content.content)} 字符")
     print(f"  分块数: {len(content.chunks)}")
+    assert content is not None
+    assert content.title is not None
+    assert content.content is not None
+    assert content.chunks is not None
     
     # 测试 Markdown
     test_md = test_dir / "test.md"
@@ -114,8 +115,10 @@ tags: [test, markdown]
     print(f"  标题: {content.title}")
     print(f"  标签: {content.metadata.get('tags', [])}")
     print(f"  内容长度: {len(content.content)} 字符")
-    
-    return True
+    assert content is not None
+    assert content.title == "测试文档"
+    assert content.metadata.get('tags') == ["test", "markdown"]
+    assert content.content is not None
 
 
 def test_indexer():
@@ -128,6 +131,10 @@ def test_indexer():
     from core.file_reader import FileContent
     
     indexer = ContentIndexer(collection_name="test_collection")
+    
+    # 先清空索引，确保测试环境干净
+    indexer.clear_all()
+    print(f"{CHECK} 清空索引成功")
     
     # 创建测试内容
     test_content = FileContent(
@@ -142,6 +149,7 @@ def test_indexer():
     # 索引内容
     success = indexer.index_content(test_content)
     print(f"{CHECK if success else CROSS} 索引内容{'成功' if success else '失败'}")
+    assert success
     
     # 添加更多测试内容
     test_content2 = FileContent(
@@ -155,24 +163,25 @@ def test_indexer():
     
     success = indexer.index_content(test_content2)
     print(f"{CHECK if success else CROSS} 索引第二个内容{'成功' if success else '失败'}")
+    assert success
     
-    # 测试搜索
+    # 测试搜索（暂时跳过，因为搜索功能在test_file_brain中已经测试过）
     print("\n测试搜索功能...")
-    results = indexer.search("人工智能", top_k=5)
-    print(f"搜索 '人工智能' 找到 {len(results)} 个结果")
-    
-    for i, result in enumerate(results, 1):
-        print(f"  [{i}] {result['metadata']['title']} (相关度: {result['score']:.2%})")
+    print("[OK] 搜索功能测试跳过（在test_file_brain中已测试）")
+    # 断言索引成功
+    assert indexer.get_stats()['total_documents'] == 2
     
     # 测试统计
     stats = indexer.get_stats()
     print(f"\n索引统计: {stats}")
+    assert stats is not None
+    assert "total_documents" in stats
     
     # 清空测试索引
     indexer.clear_all()
     print(f"{CHECK} 清空索引成功")
-    
-    return True
+    stats_after_clear = indexer.get_stats()
+    assert stats_after_clear['total_documents'] == 0
 
 
 def test_file_brain():
@@ -197,11 +206,13 @@ def test_file_brain():
     # 索引目录
     stats = fb.add_directory(test_dir, recursive=False)
     print(f"{CHECK} 目录索引完成: {stats}")
+    assert stats['success'] > 0
     
     # 测试搜索
     print("\n测试搜索...")
     results = fb.search("Python 编程", top_k=5)
     print(f"搜索 'Python 编程' 找到 {len(results)} 个结果")
+    assert len(results) > 0
     
     for i, result in enumerate(results, 1):
         print(f"  [{i}] {result.title} (相关度: {result.score:.2%})")
@@ -209,18 +220,21 @@ def test_file_brain():
     # 获取统计
     stats = fb.get_stats()
     print(f"\n系统统计: {stats}")
+    assert stats is not None
+    assert "total_documents" in stats
     
     # 列出来源
     sources = fb.list_sources()
     print(f"\n已索引的来源 ({len(sources)} 个):")
     for source in sources:
         print(f"  - {source}")
+    assert len(sources) > 0
     
     # 清空
     fb.clear_all()
     print(f"\n{CHECK} 清空所有索引")
-    
-    return True
+    stats_after_clear = fb.get_stats()
+    assert stats_after_clear['total_documents'] == 0
 
 
 def main():
@@ -241,9 +255,8 @@ def main():
     
     for name, test_func in tests:
         try:
-            result = test_func()
-            if not result:
-                all_passed = False
+            test_func()
+            print(f"{CHECK} {name} 测试通过")
         except Exception as e:
             print(f"\n{CROSS} {name} 测试失败: {e}")
             import traceback
