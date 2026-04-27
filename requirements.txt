@@ -35,7 +35,7 @@ xmindparser>=1.0.8
 notion-client>=2.2.0
 
 # Utilities
-pydantic>=2.5.0
+pydantic>=2.13.3
 python-dotenv>=1.0.0
 tqdm>=4.66.0
 watchdog>=3.0.0
