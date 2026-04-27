@@ -12,7 +12,7 @@ openpyxl>=3.1.2
 
 # PDF
 PyPDF2>=3.0.1
-pdfplumber>=0.10.0
+pdfplumber>=0.11.9
 
 # HTML/Web
 beautifulsoup4>=4.12.0
