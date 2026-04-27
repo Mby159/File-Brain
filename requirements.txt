@@ -17,7 +17,7 @@ pdfplumber>=0.10.0
 # HTML/Web
 beautifulsoup4>=4.12.0
 requests>=2.31.0
-lxml>=4.9.0
+lxml>=6.1.0
 
 # Text Processing
 markdown>=3.5.0
