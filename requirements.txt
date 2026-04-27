@@ -20,7 +20,7 @@ requests>=2.31.0
 lxml>=4.9.0
 
 # Text Processing
-markdown>=3.5.0
+markdown>=3.10.2
 python-frontmatter>=1.0.0
 
 # Vector Database & AI - 使用 scikit-learn 代替 FAISS
